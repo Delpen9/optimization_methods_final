@@ -72,7 +72,6 @@ Ridge logistic regression optimal tuning parameter (C):
     ''')
 
     best_log_reg = grid_search.best_estimator_
-    best_log_reg.fit(X_train, y_train)
 
     y_pred = best_log_reg.predict(X_test)
     cm = confusion_matrix(y_test, y_pred)
@@ -92,7 +91,7 @@ Ridge logistic regression optimal tuning parameter (C):
     ## =============================================
     ## Model 3: Lasso Logistic Regression
     ## =============================================
-    model = LogisticRegression(multi_class = 'multinomial',  solver = 'saga', penalty = 'l1', random_state = 42)
+    model = LogisticRegression(multi_class = 'multinomial', solver = 'saga', penalty = 'l1', random_state = 42)
 
     param_grid = {'C': np.logspace(-4, 4, 20)}
     grid_search = GridSearchCV(model, param_grid, cv = 5, scoring = 'accuracy')
@@ -107,7 +106,6 @@ Lasso logistic regression optimal tuning parameter (C):
     ''')
 
     best_log_reg = grid_search.best_estimator_
-    best_log_reg.fit(X_train, y_train)
 
     y_pred = best_log_reg.predict(X_test)
     cm = confusion_matrix(y_test, y_pred)
@@ -118,6 +116,53 @@ Lasso logistic regression optimal tuning parameter (C):
     plt.ylabel('True Label')
 
     image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'multinomial_lasso_logistic_regression_confusion_matrix.png'))
+    plt.savefig(image_path)
+
+    plt.clf()
+    plt.cla()
+    ## =============================================
+
+    ## =============================================
+    ## Model 4: Adaptive Lasso Logistic Regression
+    ## =============================================
+    initial_model = LogisticRegression(multi_class = 'multinomial', C = 10000, solver = 'saga', penalty = 'l1', random_state = 42)
+    initial_model.fit(X_train, y_train)
+    initial_coef = initial_model.coef_
+
+    gamma = 0.5
+    weights = np.mean(np.power(np.abs(initial_coef), gamma), axis = 0)
+
+    param_grid = {'C': np.logspace(-4, 4, 20)}
+    weighted_lasso = LogisticRegression(penalty = 'l1', multi_class = 'multinomial', solver = 'saga', random_state = 42)
+
+    grid_search = GridSearchCV(
+        estimator = LogisticRegression(penalty = 'l1', multi_class = 'multinomial', solver = 'saga', random_state = 42),
+        param_grid = param_grid,
+        cv = 10,
+        scoring = 'accuracy'
+    )
+
+    grid_search.fit(X_train / weights, y_train)
+
+    optimal_C = grid_search.best_params_['C']
+    print(f'''
+##################################################    
+Adaptive Lasso logistic regression optimal tuning parameter (C):
+{optimal_C}
+##################################################
+    ''')
+
+    best_log_reg = grid_search.best_estimator_
+
+    y_pred = best_log_reg.predict(X_test / weights)
+    cm = confusion_matrix(y_test, y_pred)
+
+    sns.heatmap(cm, annot = True, fmt = 'd')
+    plt.title('Confusion Matrix: Adaptive Lasso Logistic Regression')
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'multinomial_adaptive_lasso_logistic_regression_confusion_matrix.png'))
     plt.savefig(image_path)
 
     plt.clf()
