@@ -55,59 +55,59 @@ if __name__ == '__main__':
     current_path = os.path.abspath(__file__)
     data_path = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'ratings.csv'))
 
-    # # Part 1
-    # zero_rates = np.arange(0.05, 0.55, 0.05)
-    # reconstruction_errors = []
-    # for zero_rate in zero_rates:
-    #     R = np.genfromtxt(data_path, delimiter = ',')
-    #     R0 = R.copy()
+    # Part 1
+    zero_rates = np.arange(0.05, 0.55, 0.05)
+    reconstruction_errors = []
+    for zero_rate in zero_rates:
+        R = np.genfromtxt(data_path, delimiter = ',')
+        R0 = R.copy()
 
-    #     A = np.random.rand(*R.shape) >= (1 - zero_rate)
-    #     R[A] = 0
-    #     m = np.sum(np.sum(R == 0))
+        A = np.random.rand(*R.shape) >= (1 - zero_rate)
+        R[A] = 0
+        m = np.sum(np.sum(R == 0))
 
-    #     Z = PFBS(R0, R, A, m, *R.shape)
+        Z = PFBS(R0, R, A, m, *R.shape)
 
-    #     reconstruction_errors.append(relative_reconstruction_error(Z, R0))
+        reconstruction_errors.append(relative_reconstruction_error(Z, R0))
 
-    #     if zero_rate == 0.5:
-    #         print('#####################################################')
-    #         print('The matrix with missing values:')
-    #         unique_values, counts = np.unique(R.astype(int).flatten(), return_counts = True)
-    #         for value, count in zip(unique_values, counts):
-    #             print(f'{value} appears {count} times.')
-    #         print('#####################################################')
-    #         print('The recovered matrix:')
-    #         unique_values, counts = np.unique(Z.flatten(), return_counts = True)
-    #         for value, count in zip(unique_values, counts):
-    #             print(f'{value} appears {count} times.')
-    #         print('#####################################################')
-    #         print('The original matrix:')
-    #         unique_values, counts = np.unique(R0.astype(int).flatten(), return_counts = True)
-    #         for value, count in zip(unique_values, counts):
-    #             print(f'{value} appears {count} times.')
-    #         print('#####################################################')
+        if zero_rate == 0.5:
+            print('#####################################################')
+            print('The matrix with missing values:')
+            unique_values, counts = np.unique(R.astype(int).flatten(), return_counts = True)
+            for value, count in zip(unique_values, counts):
+                print(f'{value} appears {count} times.')
+            print('#####################################################')
+            print('The recovered matrix:')
+            unique_values, counts = np.unique(Z.flatten(), return_counts = True)
+            for value, count in zip(unique_values, counts):
+                print(f'{value} appears {count} times.')
+            print('#####################################################')
+            print('The original matrix:')
+            unique_values, counts = np.unique(R0.astype(int).flatten(), return_counts = True)
+            for value, count in zip(unique_values, counts):
+                print(f'{value} appears {count} times.')
+            print('#####################################################')
 
-    # # ===================================
-    # # Plot 1: Part 1 - Reconstruction Error VS. Percentage of Missing Data
-    # # ===================================
-    # percent_of_missing_data = zero_rates.reshape(-1, 1) * 100
-    # reconstruction_errors = np.array(reconstruction_errors).reshape(-1, 1)
+    # ===================================
+    # Plot 1: Part 1 - Reconstruction Error VS. Percentage of Missing Data
+    # ===================================
+    percent_of_missing_data = zero_rates.reshape(-1, 1) * 100
+    reconstruction_errors = np.array(reconstruction_errors).reshape(-1, 1)
 
-    # plot_np = np.hstack((percent_of_missing_data, reconstruction_errors))
-    # plot_df = pd.DataFrame(plot_np, columns = ['Percent of Missing Data', 'Reconstruction Error'])
+    plot_np = np.hstack((percent_of_missing_data, reconstruction_errors))
+    plot_df = pd.DataFrame(plot_np, columns = ['Percent of Missing Data', 'Reconstruction Error'])
 
-    # sns.lineplot(data = plot_df, x = 'Percent of Missing Data', y = 'Reconstruction Error')
-    # plt.title('Part 1: Percent of Missing Data VS. Relative Reconstruction Error')
-    # plt.xlabel('Percent of Missing Data (%)')
-    # plt.ylabel('Relative Reconstruction Error')
+    sns.lineplot(data = plot_df, x = 'Percent of Missing Data', y = 'Reconstruction Error')
+    plt.title('Part 1: Percent of Missing Data VS. Relative Reconstruction Error')
+    plt.xlabel('Percent of Missing Data (%)')
+    plt.ylabel('Relative Reconstruction Error')
 
-    # image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q3_part1_missing_data_vs_reconstruction_error.png'))
-    # plt.savefig(image_path)
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q3_part1_missing_data_vs_reconstruction_error.png'))
+    plt.savefig(image_path)
 
-    # plt.clf()
-    # plt.cla()
-    # # ===================================
+    plt.clf()
+    plt.cla()
+    # ===================================
 
     # Part 2
     zero_rates = np.arange(0.05, 0.55, 0.05)
