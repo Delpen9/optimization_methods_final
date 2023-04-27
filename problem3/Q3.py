@@ -26,13 +26,13 @@ def PFBS(
     m : int,
     n1 : int,
     n2 : int,
-    tau : int = 1,
-    max_iteration : int = 500
+    tau : int = 200,
+    max_iteration : int = 200
 ) -> np.ndarray:
     '''
     '''
     Y = np.zeros((n1, n2))
-    delta = 0.01
+    delta = 0.1
     for i in range(max_iteration):
         U, S, V = np.linalg.svd(Y)
         S_diag = np.zeros(Y.shape)
