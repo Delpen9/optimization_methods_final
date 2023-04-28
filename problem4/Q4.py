@@ -136,22 +136,22 @@ if __name__ == '__main__':
     ## ====================================
     ## Part 1:
     ## ====================================
-    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P1.mat'))
-    # M = scipy.io.loadmat(file_directory)['X']
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P1.mat'))
+    M = scipy.io.loadmat(file_directory)['X']
 
-    # L, S = RPCA(M, 0.01)
+    L, S = RPCA(M, 0.01)
 
-    # L = ((L - L.min()) / (L.max() - L.min())) * 255
-    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'L.png'))
-    # cv2.imwrite(file_directory, L)
+    L = ((L - M.min()) / (M.max() - M.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'L.png'))
+    cv2.imwrite(file_directory, L)
 
-    # S = ((S - S.min()) / (S.max() - S.min())) * 255
-    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'S.png'))
-    # cv2.imwrite(file_directory, S)
+    S = ((S - M.min()) / (M.max() - M.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'S.png'))
+    cv2.imwrite(file_directory, S)
 
-    # M = ((M - M.min()) / (M.max() - M.min())) * 255
-    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'M.png'))
-    # cv2.imwrite(file_directory, M)
+    M = ((M - M.min()) / (M.max() - M.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'M.png'))
+    cv2.imwrite(file_directory, M)
     ## ====================================
 
     ## ====================================
