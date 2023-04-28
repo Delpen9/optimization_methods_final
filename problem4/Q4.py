@@ -16,7 +16,92 @@ import seaborn as sns
 # Saving Images
 import cv2
 
-def rpca(
+def construct_tensor(
+    X : np.ndarray
+) -> np.ndarray:
+    '''
+    '''
+    n = X.shape[0]
+    mat_1 = np.tile(np.arange(n), (n, 1)).T
+    mat_2 = mat_1.T.copy()
+
+    tensor = np.stack((mat_1, mat_2), axis = 2)
+    return tensor
+
+def linear_kernel(
+    tensor : np.ndarray,
+    a : int = 1,
+    b : int = 1
+) -> np.ndarray:
+    '''
+    '''
+    matrix = np.prod(tensor, axis = 2)
+    gram_matrix = a + b * matrix
+    return gram_matrix
+
+def polynomial_kernel(
+    tensor : np.ndarray,
+    c : int = 1,
+    d : int = 10
+) -> np.ndarray:
+    '''
+    '''
+    matrix = np.prod(tensor, axis = 2)
+    gram_matrix = (matrix + c)**d
+    return gram_matrix
+
+def periodic_kernel(
+    tensor : np.ndarray,
+    e : int = 2,
+    f : int = 5
+) -> np.ndarray:
+    '''
+    '''
+    matrix = tensor[:, :, 0] - tensor[:, :, 1]
+    gram_matrix = np.exp(-2 * np.sin(np.pi * np.abs(matrix) / e)**2 / f)
+    return gram_matrix
+
+def gaussian_kernel(
+    tensor : np.ndarray,
+    g : int = 0.04
+) -> np.ndarray:
+    '''
+    '''
+    matrix = tensor[:, :, 0] - tensor[:, :, 1]
+    gram_matrix = np.exp(-(matrix)**2 / (2 * g))
+    return gram_matrix
+
+def gram_matrix(
+    X : np.ndarray,
+    kernel : str = 'linear'
+)-> np.ndarray:
+    '''
+    '''
+    tensor = construct_tensor(X)
+
+    if kernel == 'linear':
+        gram_matrix = linear_kernel(tensor)
+    elif kernel == 'polynomial':
+        gram_matrix = polynomial_kernel(tensor)
+    elif kernel == 'periodic':
+        gram_matrix = periodic_kernel(tensor)
+    else:
+        gram_matrix = gaussian_kernel(tensor)
+
+    return gram_matrix
+
+def RKHS(
+    K : np.ndarray,
+    y : np.ndarray
+) -> np.ndarray:
+    '''
+    '''
+    _lambda = 0.1
+    _alpha = np.linalg.inv(K + _lambda * np.eye(K.shape[0])) @ y
+    y_hat = K @ _alpha
+    return y_hat
+
+def RPCA(
     M : np.ndarray,
     mu : float = 1,
     _lambda : float = 0.01,
@@ -47,24 +132,83 @@ if __name__ == '__main__':
     np.random.seed(1234)
 
     current_path = os.path.abspath(__file__)
-    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P1.mat'))
-
-    M = scipy.io.loadmat(file_directory)['X']
 
     ## ====================================
     ## Part 1:
     ## ====================================
-    L, S = rpca(M, 0.01)
+    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P1.mat'))
+    # M = scipy.io.loadmat(file_directory)['X']
 
-    L = ((L - L.min()) / (L.max() - L.min())) * 255
-    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'L.png'))
-    cv2.imwrite(file_directory, L)
+    # L, S = RPCA(M, 0.01)
 
-    S = ((S - S.min()) / (S.max() - S.min())) * 255
-    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'S.png'))
-    cv2.imwrite(file_directory, S)
+    # L = ((L - L.min()) / (L.max() - L.min())) * 255
+    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'L.png'))
+    # cv2.imwrite(file_directory, L)
 
-    M = ((M - M.min()) / (M.max() - M.min())) * 255
-    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'M.png'))
-    cv2.imwrite(file_directory, M)
+    # S = ((S - S.min()) / (S.max() - S.min())) * 255
+    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'S.png'))
+    # cv2.imwrite(file_directory, S)
+
+    # M = ((M - M.min()) / (M.max() - M.min())) * 255
+    # file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'M.png'))
+    # cv2.imwrite(file_directory, M)
+    ## ====================================
+
+    ## ====================================
+    ## Part 2.1: 
+    ## ====================================
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P2Train.csv'))
+    data_train = np.genfromtxt(file_directory, delimiter = ',')
+
+    X_train = data_train[:, [0]].copy()
+    y_train = data_train[:, [1]].flatten().copy()
+    
+    linear_kernel = gram_matrix(X_train, 'linear')
+    polynomial_kernel = gram_matrix(X_train, 'polynomial')
+    periodic_kernel = gram_matrix(X_train, 'periodic')
+    gaussian_kernel = gram_matrix(X_train, 'gaussian')
+
+    linear_kernel = ((linear_kernel - linear_kernel.min()) / (linear_kernel.max() - linear_kernel.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'linear_kernel.png'))
+    cv2.imwrite(file_directory, linear_kernel)
+
+    polynomial_kernel = ((polynomial_kernel - polynomial_kernel.min()) / (polynomial_kernel.max() - polynomial_kernel.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'polynomial_kernel.png'))
+    cv2.imwrite(file_directory, polynomial_kernel)
+
+    periodic_kernel = ((periodic_kernel - periodic_kernel.min()) / (periodic_kernel.max() - periodic_kernel.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'periodic_kernel.png'))
+    cv2.imwrite(file_directory, periodic_kernel)
+
+    gaussian_kernel = ((gaussian_kernel - gaussian_kernel.min()) / (gaussian_kernel.max() - gaussian_kernel.min())) * 255
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'gaussian_kernel.png'))
+    cv2.imwrite(file_directory, gaussian_kernel)
+    ## ====================================
+
+    ## ====================================
+    ## Part 2.2: NOTE: X_train and X_test are identical
+    ## ====================================
+    file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P2Test.csv'))
+    data_test = np.genfromtxt(file_directory, delimiter = ',')
+
+    X_test = data_test[:, [0]].copy()
+    y_test = data_test[:, [1]].flatten().copy()
+    
+    print('#####################################################')
+    y_pred_linear = RKHS(linear_kernel, y_train)
+    rmse = np.sqrt(np.mean((y_pred_linear - y_test) ** 2))
+    print(f'''The RMSE on the test set for the linear kernel is: \n{round(rmse, 6)}''')
+
+    y_pred_polynomial = RKHS(polynomial_kernel, y_train)
+    rmse = np.sqrt(np.mean((y_pred_polynomial - y_test) ** 2))
+    print(f'''The RMSE on the test set for the polynomial kernel is: \n{round(rmse, 6)}''')
+
+    y_pred_periodic = RKHS(periodic_kernel, y_train)
+    rmse = np.sqrt(np.mean((y_pred_periodic - y_test) ** 2))
+    print(f'''The RMSE on the test set for the periodic kernel is: \n{round(rmse, 6)}''')
+
+    y_pred_gaussian = RKHS(gaussian_kernel, y_train)
+    rmse = np.sqrt(np.mean((y_pred_gaussian - y_test) ** 2))
+    print(f'''The RMSE on the test set for the gaussian kernel is: \n{round(rmse, 6)}''')
+    print('#####################################################')
     ## ====================================
