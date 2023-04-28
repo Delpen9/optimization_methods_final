@@ -28,7 +28,7 @@ def construct_tensor(
     tensor = np.stack((mat_1, mat_2), axis = 2)
     return tensor
 
-def linear_kernel(
+def linear_kernel_construction(
     tensor : np.ndarray,
     a : int = 1,
     b : int = 1
@@ -39,7 +39,7 @@ def linear_kernel(
     gram_matrix = a + b * matrix
     return gram_matrix
 
-def polynomial_kernel(
+def polynomial_kernel_construction(
     tensor : np.ndarray,
     c : int = 1,
     d : int = 10
@@ -50,7 +50,7 @@ def polynomial_kernel(
     gram_matrix = (matrix + c)**d
     return gram_matrix
 
-def periodic_kernel(
+def periodic_kernel_construction(
     tensor : np.ndarray,
     e : int = 2,
     f : int = 5
@@ -61,7 +61,7 @@ def periodic_kernel(
     gram_matrix = np.exp(-2 * np.sin(np.pi * np.abs(matrix) / e)**2 / f)
     return gram_matrix
 
-def gaussian_kernel(
+def gaussian_kernel_construction(
     tensor : np.ndarray,
     g : int = 0.04
 ) -> np.ndarray:
@@ -80,13 +80,13 @@ def gram_matrix(
     tensor = construct_tensor(X)
 
     if kernel == 'linear':
-        gram_matrix = linear_kernel(tensor)
+        gram_matrix = linear_kernel_construction(tensor)
     elif kernel == 'polynomial':
-        gram_matrix = polynomial_kernel(tensor)
+        gram_matrix = polynomial_kernel_construction(tensor)
     elif kernel == 'periodic':
-        gram_matrix = periodic_kernel(tensor)
+        gram_matrix = periodic_kernel_construction(tensor)
     else:
-        gram_matrix = gaussian_kernel(tensor)
+        gram_matrix = gaussian_kernel_construction(tensor)
 
     return gram_matrix
 
@@ -186,13 +186,19 @@ if __name__ == '__main__':
     ## ====================================
 
     ## ====================================
-    ## Part 2.2: NOTE: X_train and X_test are identical
+    ## Part 2.2:
+    ## NOTE: X_train and X_test are identical
     ## ====================================
     file_directory = os.path.abspath(os.path.join(current_path, '..', '..', 'data', 'FinalQ4P2Test.csv'))
     data_test = np.genfromtxt(file_directory, delimiter = ',')
 
     X_test = data_test[:, [0]].copy()
     y_test = data_test[:, [1]].flatten().copy()
+
+    linear_kernel = gram_matrix(X_train, 'linear')
+    polynomial_kernel = gram_matrix(X_train, 'polynomial')
+    periodic_kernel = gram_matrix(X_train, 'periodic')
+    gaussian_kernel = gram_matrix(X_train, 'gaussian')
     
     print('#####################################################')
     y_pred_linear = RKHS(linear_kernel, y_train)
@@ -211,4 +217,70 @@ if __name__ == '__main__':
     rmse = np.sqrt(np.mean((y_pred_gaussian - y_test) ** 2))
     print(f'''The RMSE on the test set for the gaussian kernel is: \n{round(rmse, 6)}''')
     print('#####################################################')
+
+    prediction_df = pd.DataFrame(np.hstack((
+        X_train.reshape(-1, 1),
+        y_pred_linear.reshape(-1, 1),
+        y_pred_polynomial.reshape(-1, 1),
+        y_pred_periodic.reshape(-1, 1),
+        y_pred_gaussian.reshape(-1, 1),
+        y_test.reshape(-1, 1),
+    )), columns = ['X', 'y_pred_linear', 'y_pred_polynomial', 'y_pred_periodic', 'y_pred_gaussian', 'y_test'])
+
+    ## ====================================
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_pred_linear')
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_test')
+    plt.title('Linear Kernel Y Predictions VS. True Y')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q4_linear_kernel_vs_true_y.png'))
+    plt.savefig(image_path)
+
+    plt.clf()
+    plt.cla()
+    ## ====================================
+
+    ## ====================================
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_pred_polynomial')
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_test')
+    plt.title('Polynomial Kernel Y Predictions VS. True Y')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q4_polynomial_kernel_vs_true_y.png'))
+    plt.savefig(image_path)
+
+    plt.clf()
+    plt.cla()
+    ## ====================================
+
+    ## ====================================
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_pred_periodic')
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_test')
+    plt.title('Periodic Kernel Y Predictions VS. True Y')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q4_periodic_kernel_vs_true_y.png'))
+    plt.savefig(image_path)
+
+    plt.clf()
+    plt.cla()
+    ## ====================================
+
+    ## ====================================
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_pred_gaussian')
+    sns.lineplot(data = prediction_df, x = 'X', y = 'y_test')
+    plt.title('Gaussian Kernel Y Predictions VS. True Y')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+
+    image_path = os.path.abspath(os.path.join(current_path, '..', '..', 'output', 'q4_gaussian_kernel_vs_true_y.png'))
+    plt.savefig(image_path)
+
+    plt.clf()
+    plt.cla()
+    ## ====================================
+
     ## ====================================
